@@ -30,6 +30,10 @@ Do you moderate a subreddit where the team regularly needs to publish official a
 
 ## What's New?
 
+### Post scheduling
+
+Relay App now includes a scheduling system that allows moderators to automate posts with custom times on a weekly interval.
+
 ### Lock posts/comments
 
 Functionality has been implemented to allow locking of Relay App posts/comments.
@@ -87,9 +91,47 @@ Relay App is quick and easy to set up in your subreddit! Follow these steps to g
 
 - Add/edit templates in app settings:
   `https://developers.reddit.com/r/YOUR_SUBREDDIT/apps/relay-app`
-- You can store **up to 3** per subreddit.
+- You can store **up to 5** templates per subreddit.
 - In the Relay App menu choose **Use template** to prefill **Title** and **Body**; you can still edit before publishing.
 - Works with **any language/locale** (great for AMA announcements, rules changes, monthly stickies).
+
+---
+
+## 📅 Post Scheduling
+
+Relay App features a custom-built scheduling engine designed to overcome the rigid limitations of Reddit's native post scheduler. The scheduling system works in conjunction with the post template system to automate the posting of selected post templates to your subreddit. 
+
+While Reddit's built-in scheduler is a useful tool, it has a few significant constraints:
+
+- Native Reddit scheduling only allows you to automate a total of **2 stickied posts**. If you want more, you have to manually sticky them.
+
+- Because the native system is capped at two automated slots, trying to automate stickied posts or events after the limit has been reached results in bumping off existing stickied posts, requiring moderators to re-sticky posts they still need.
+
+These issues can be quite frustrating for moderators in need of automating more than 2 posts that need to be stickied. Relay App expands your subreddit's prime real estate by leveraging the full 6-post limit of the modern Reddit Community Highlights system.
+
+- Relay App allows you to schedule and automate up to five distinct templates.
+
+- Scheduled posts can be stickied, locked, or both.
+
+- Relay App bypasses Reddit's native post scheduler limit of 2 stickied posts, allowing you to automate up to **5 sticked posts**.
+
+- By capping our template system at five slots, Relay App intentionally leaves one permanent manual slot open. This ensures your mod team always has room to manually sticky an emergency announcement, a breaking news thread, or other post without the app accidentally overwriting it.
+
+> **Note:** Monthly post scheduling intervals are coming soon.
+
+### Using the Scheduling System
+
+The scheduling system works with the Post Template system to automate subreddit posts. Follow these steps to use it:
+
+1. **Create Post Templates** – Set up your post templates in the app settings.
+
+2. **Enable Scheduling** – Enable scheduling on the templates you want to schedule and specify their timing (All scheduled posts use UTC time).
+
+3. **Activate Scheduled Posts** – In the Subreddit Moderator Context Menu, select **Apply Scheduled Posts** to apply all enabled schedules.
+
+> **Note:** If **"Repeat Weekly?"** is toggled off, posts will not run again unless manually re-applied.
+
+> **Coming Soon:** Support for monthly post scheduling intervals.
 
 ---
 
@@ -150,5 +192,7 @@ If you have any feedback/suggestions or need support, feel free to message [u/It
 * v0.0.5: Corrected minor error with Reddit Developer Terms link.
 * v0.0.6: Corrected minor error with resources links.
 * v0.0.7: Additional clean up in ReadMe.
+* v0.0.8: Implemented scheduling system, updated ReadMe.
+* v0.0.9: Updated ReadMe
 
 Thanks for using **Relay App** — publish faster, safer, and without shared accounts!
