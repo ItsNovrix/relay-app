@@ -24,6 +24,41 @@ Devvit.configure({
   http: true,
 });
 
+Devvit.addSchedulerJob({
+  name: 'scheduled_post_job',
+  onRun: async (event, context) => {
+    const { templateNumber } = event.data!;
+    const subreddit = await context.reddit.getCurrentSubreddit();
+    
+    const title = await context.settings.get(`postTemplate${templateNumber}title`) as string;
+    const body = await context.settings.get(`postTemplate${templateNumber}body`) as string;
+    const sticky = await context.settings.get(`postTemplate${templateNumber}Sticky`) as boolean;
+    const lock = await context.settings.get(`postTemplate${templateNumber}Lock`) as boolean;
+
+    if (!title) return;
+
+    const post = await context.reddit.submitPost({
+      subredditName: subreddit.name,
+      title: title,
+      text: body,
+    });
+
+    await post.distinguish(true);
+    if (sticky) await post.sticky();
+    if (lock) await post.lock();
+
+    console.log(`Scheduled Template ${templateNumber} posted successfully!`);
+
+    const repeat = await context.settings.get(
+      `postTemplate${templateNumber}Repeat`
+    ) as boolean;
+
+    if (!repeat && event.job?.id) {
+      await context.scheduler.cancelJob(event.job.id);
+    }
+  },
+});
+
 Devvit.addSettings([
   {
     type: "boolean",
@@ -99,7 +134,7 @@ Devvit.addSettings([
   },
   {
     type: "group",
-    label: "Post template 1",
+    label: "Post Template 1",
     fields: [
       {
         name: "postTemplate1name",
@@ -123,11 +158,66 @@ Devvit.addSettings([
         helpText:
           "Prefilled body (Markdown supported). You can still edit before publishing.",
       },
+{
+    name: "postTemplate1Enabled",
+    type: "boolean",
+    label: "Enable scheduling for Template 1?",
+    helpText: "Enable this to schedule posts using Template 1.",
+    defaultValue: false,
+  },
+      {
+        name: "postTemplate1Repeat",
+        type: "boolean",
+        label: "Repeat weekly?",
+        helpText: "If off, this will only post once at the next scheduled time.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate1Day",
+        type: "select",
+        label: "Day of the week",
+        options: [
+          { label: "Monday", value: "1" },
+          { label: "Tuesday", value: "2" },
+          { label: "Wednesday", value: "3" },
+          { label: "Thursday", value: "4" },
+          { label: "Friday", value: "5" },
+          { label: "Saturday", value: "6" },
+          { label: "Sunday", value: "0" },
+        ],
+        defaultValue: "1",
+      },
+      {
+        name: "postTemplate1Hour",
+        type: "number",
+        label: "Hour (0-23) UTC",
+        helpText: "Use 24-hour format (e.g., 13 = 1 PM, 17 = 5 PM). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate1Minute",
+        type: "number",
+        label: "Minute (0-59) UTC",
+        helpText: "Minute of the hour (0-59). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate1Sticky",
+        type: "boolean",
+        label: "Sticky the scheduled post?",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate1Lock",
+        type: "boolean",
+        label: "Lock the scheduled post?",
+        defaultValue: false,
+      },
     ],
   },
   {
     type: "group",
-    label: "Post template 2",
+    label: "Post Template 2",
     fields: [
       {
         name: "postTemplate2name",
@@ -151,11 +241,66 @@ Devvit.addSettings([
         helpText:
           "Prefilled body (Markdown supported). You can still edit before publishing.",
       },
+      {
+        name: "postTemplate2Enabled",
+        type: "boolean",
+        label: "Enable scheduling for Template 2?",
+        helpText: "Enable this to schedule posts using Template 2.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate2Repeat",
+        type: "boolean",
+        label: "Repeat weekly?",
+        helpText: "If off, this will only post once at the next scheduled time.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate2Day",
+        type: "select",
+        label: "Day of the week",
+        options: [
+          { label: "Monday", value: "1" },
+          { label: "Tuesday", value: "2" },
+          { label: "Wednesday", value: "3" },
+          { label: "Thursday", value: "4" },
+          { label: "Friday", value: "5" },
+          { label: "Saturday", value: "6" },
+          { label: "Sunday", value: "0" },
+        ],
+        defaultValue: "1",
+      },
+      {
+        name: "postTemplate2Hour",
+        type: "number",
+        label: "Hour (0-23) UTC",
+        helpText: "Use 24-hour format (e.g., 13 = 1 PM, 17 = 5 PM). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate2Minute",
+        type: "number",
+        label: "Minute (0-59) UTC",
+        helpText: "Minute of the hour (0-59). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate2Sticky",
+        type: "boolean",
+        label: "Sticky the scheduled post?",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate2Lock",
+        type: "boolean",
+        label: "Lock the scheduled post?",
+        defaultValue: false,
+      },
     ],
   },
   {
     type: "group",
-    label: "Post template 3",
+    label: "Post Template 3",
     fields: [
       {
         name: "postTemplate3name",
@@ -179,9 +324,230 @@ Devvit.addSettings([
         helpText:
           "Prefilled body (Markdown supported). You can still edit before publishing.",
       },
+      {
+        name: "postTemplate3Enabled",
+        type: "boolean",
+        label: "Enable scheduling for Template 3?",
+        helpText: "Enable this to schedule posts using Template 3.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate3Repeat",
+        type: "boolean",
+        label: "Repeat weekly?",
+        helpText: "If off, this will only post once at the next scheduled time.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate3Day",
+        type: "select",
+        label: "Day of the week",
+        options: [
+          { label: "Monday", value: "1" },
+          { label: "Tuesday", value: "2" },
+          { label: "Wednesday", value: "3" },
+          { label: "Thursday", value: "4" },
+          { label: "Friday", value: "5" },
+          { label: "Saturday", value: "6" },
+          { label: "Sunday", value: "0" },
+        ],
+        defaultValue: "1",
+      },
+      {
+        name: "postTemplate3Hour",
+        type: "number",
+        label: "Hour (0-23) UTC",
+        helpText: "Use 24-hour format (e.g., 13 = 1 PM, 17 = 5 PM). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate3Minute",
+        type: "number",
+        label: "Minute (0-59) UTC",
+        helpText: "Minute of the hour (0-59). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate3Sticky",
+        type: "boolean",
+        label: "Sticky the scheduled post?",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate3Lock",
+        type: "boolean",
+        label: "Lock the scheduled post?",
+        defaultValue: false,
+      },
     ],
   },
-]);
+  {
+    type: "group",
+    label: "Post Template 4",
+    fields: [
+      {
+        name: "postTemplate4name",
+        type: "string",
+        label: "Template 4 name",
+        helpText:
+          "Internal name shown only in settings. Not visible to users or in posts",
+        defaultValue: "Fourth template",
+      },
+      {
+        name: "postTemplate4title",
+        type: "string",
+        label: "Template 4 post title",
+        helpText:
+          "Prefilled title when using this template. Note: post titles can’t be edited after publishing.",
+      },
+      {
+        name: "postTemplate4body",
+        type: "paragraph",
+        label: `Template 4 post body`,
+        helpText:
+          "Prefilled body (Markdown supported). You can still edit before publishing.",
+      },
+      {
+        name: "postTemplate4Enabled",
+        type: "boolean",
+        label: "Enable scheduling for Template 4?",
+        helpText: "Enable this to schedule posts using Template 4.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate4Repeat",
+        type: "boolean",
+        label: "Repeat weekly?",
+        helpText: "If off, this will only post once at the next scheduled time.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate4Day",
+        type: "select",
+        label: "Day of the week",
+        options: [
+          { label: "Monday", value: "1" },
+          { label: "Tuesday", value: "2" },
+          { label: "Wednesday", value: "3" },
+          { label: "Thursday", value: "4" },
+          { label: "Friday", value: "5" },
+          { label: "Saturday", value: "6" },
+          { label: "Sunday", value: "0" },
+        ],
+        defaultValue: "1",
+      },
+      {
+        name: "postTemplate4Hour",
+        type: "number",
+        label: "Hour (0-23) UTC",
+        helpText: "Use 24-hour format (e.g., 13 = 1 PM, 17 = 5 PM). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate4Minute",
+        type: "number",
+        label: "Minute (0-59) UTC",
+        helpText: "Minute of the hour (0-59). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate4Sticky",
+        type: "boolean",
+        label: "Sticky the scheduled post?",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate4Lock",
+        type: "boolean",
+        label: "Lock the scheduled post?",
+        defaultValue: false,
+      },
+    ],
+  },
+  {
+    type: "group",
+    label: "Post Template 5",
+    fields: [
+      {
+        name: "postTemplate5name",
+        type: "string",
+        label: "Template 5 name",
+        helpText:
+          "Internal name shown only in settings. Not visible to users or in posts",
+        defaultValue: "Fifth template",
+      },
+      {
+        name: "postTemplate5title",
+        type: "string",
+        label: "Template 5 post title",
+        helpText:
+          "Prefilled title when using this template. Note: post titles can’t be edited after publishing.",
+      },
+      {
+        name: "postTemplate5body",
+        type: "paragraph",
+        label: `Template 5 post body`,
+        helpText:
+          "Prefilled body (Markdown supported). You can still edit before publishing.",
+      },
+      {
+        name: "postTemplate5Enabled",
+        type: "boolean",
+        label: "Enable scheduling for Template 5?",
+        helpText: "Enable this to schedule posts using Template 5.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate5Repeat",
+        type: "boolean",
+        label: "Repeat weekly?",
+        helpText: "If off, this will only post once at the next scheduled time.",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate5Day",
+        type: "select",
+        label: "Day of the week",
+        options: [
+          { label: "Monday", value: "1" },
+          { label: "Tuesday", value: "2" },
+          { label: "Wednesday", value: "3" },
+          { label: "Thursday", value: "4" },
+          { label: "Friday", value: "5" },
+          { label: "Saturday", value: "6" },
+          { label: "Sunday", value: "0" },
+        ],
+        defaultValue: "1",
+      },
+      {
+        name: "postTemplate5Hour",
+        type: "number",
+        label: "Hour (0-23) UTC",
+        helpText: "Use 24-hour format (e.g., 13 = 1 PM, 17 = 5 PM). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate5Minute",
+        type: "number",
+        label: "Minute (0-59) UTC",
+        helpText: "Minute of the hour (0-59). All schedules follow UTC time.",
+        defaultValue: 0,
+      },
+      {
+        name: "postTemplate5Sticky",
+        type: "boolean",
+        label: "Sticky the scheduled post?",
+        defaultValue: false,
+      },
+      {
+        name: "postTemplate5Lock",
+        type: "boolean",
+        label: "Lock the scheduled post?",
+        defaultValue: false,
+      },
+    ],
+  },
+]),
 
 Devvit.addTrigger({
   event: "AppInstall",
@@ -211,11 +577,12 @@ Devvit.addTrigger({
 
     /* FEATURES */
     ((firstMsg += `**Features you can use today:**\n\n\n`),
-      (firstMsg += `- Publish **official mod posts** (text) with one-click **Distinguish** and **Sticky**.\n`),
-      (firstMsg += `- Publish **pinned mod comments** (also with **Distinguish** and **Stick**).\n`),
+      (firstMsg += `- Publish **official mod posts** (text) with one-click **Distinguish**, **Sticky**, and **Lock**.\n`),
+      (firstMsg += `- Publish **pinned mod comments** (also with **Distinguish**, **Sticky**, and **Lock**).\n`),
       (firstMsg += `- **Auto-flair after posting** — automatically apply a flair (e.g., *Mod Post*) to posts created via Relay App.\n`),
       (firstMsg += `- **Auto-flair after commenting** — when a **mod replies via Relay App**, the post flair can auto-switch (e.g., *Mods Replied*).\n`),
-      (firstMsg += `- **Templates** — save up to **3** reusable templates per subreddit. Add them in settings, then select **Use template** when creating a post.\n`),
+      (firstMsg += `- **Templates** — save up to **5** reusable templates per subreddit. Add them in settings, then select **Use template** when creating a post.\n`),
+      (firstMsg += `- Schedule up to **5** post templates to automatically publish at specific times weekly (with optional **Sticky** and **Lock**).\n`),
       (firstMsg += `- **Clone Post** — click **Clone** on any previous post to rapidly reuse it (perfect for monthly stickies & AMA re-runs).\n`),
       (firstMsg += `- **Permanent delete** of posts/comments created via the app (not just remove) — use with care.\n`),
       (firstMsg += `- Permissions required: **Post** or **Everything**.\n\n`));
@@ -262,6 +629,7 @@ Devvit.addTrigger({
 
     /* WHAT'S NEW */
     ((firstMsg += `**What’s new (highlights):**\n\n\n`),
+      (firstMsg += `- Schedule up to **5** post templates to automatically publish at specific times weekly (with optional **Sticky** and **Lock**).\n`),
       (firstMsg += `- **Lock Relay App posts/comments** — Functionality has been implemented to allow locking of Relay App posts/comments.\n\n`),
       (firstMsg += `- **Templates** — you can save up to **3** reusable templates per subreddit. Add them in the app settings and then use **Use template** when creating a post.\n\n`),
       (firstMsg += `- **Auto-flair after posting** — automatically apply a flair (e.g., *Mod Post*) to every post published via Relay App.\n\n`),
@@ -280,7 +648,7 @@ Devvit.addTrigger({
     /* CONFIG LINKS */
     ((firstMsg += `**Configure now:** manage templates, auto-flair, and Discord here → [Relay App settings](https://developers.reddit.com/r/${subreddit.name}/apps/relay-app)\n\n\n`),
       /* COMING SOON */
-      (firstMsg += `**Coming soon:** scheduled posting and event reminders!\n\n`));
+      (firstMsg += `**Coming soon:** monthly scheduled posting!\n\n`));
 
     /* FOOTER */
     ((firstMsg += `[Terms & Conditions](https://www.reddit.com/r/RelayApp/wiki/relay-app/terms-and-conditions/) | `),
@@ -1246,6 +1614,26 @@ Devvit.addMenuItem({
       "postTemplate3body",
     )) as Paragraph;
 
+    const template4name = (await context?.settings.get(
+      "postTemplate3name",
+    )) as string;
+    const template4title = (await context?.settings.get(
+      "postTemplate3title",
+    )) as string;
+    const template4body = (await context?.settings.get(
+      "postTemplate3body",
+    )) as Paragraph;
+
+    const template5name = (await context?.settings.get(
+      "postTemplate3name",
+    )) as string;
+    const template5title = (await context?.settings.get(
+      "postTemplate3title",
+    )) as string;
+    const template5body = (await context?.settings.get(
+      "postTemplate3body",
+    )) as Paragraph;
+
     const botAccount = (await context.reddit.getAppUser()).username;
 
     const perms = await appUser?.getModPermissionsForSubreddit(subreddit.name);
@@ -1264,6 +1652,12 @@ Devvit.addMenuItem({
         tempName3: template3name,
         tempTitle3: template3title,
         tempBody3: template3body,
+        tempName4: template4name,
+        tempTitle4: template4title,
+        tempBody4: template4body,
+        tempName5: template5name,
+        tempTitle5: template5title,
+        tempBody5: template5body,
       });
     } else {
       console.log(
@@ -1285,6 +1679,8 @@ const useTemplate = Devvit.createForm(
           { label: data.tempName1, value: "template1" },
           { label: data.tempName2, value: "template2" },
           { label: data.tempName3, value: "template3" },
+          { label: data.tempName4, value: "template4" },
+          { label: data.tempName5, value: "template5" },
         ],
       },
     ],
@@ -1327,6 +1723,26 @@ const useTemplate = Devvit.createForm(
       "postTemplate3body",
     )) as Paragraph;
 
+    const template4name = (await context?.settings.get(
+      "postTemplate4name",
+    )) as string;
+    const template4title = (await context?.settings.get(
+      "postTemplate4title",
+    )) as string;
+    const template4body = (await context?.settings.get(
+      "postTemplate4body",
+    )) as Paragraph;
+
+    const template5name = (await context?.settings.get(
+      "postTemplate5name",
+    )) as string;
+    const template5title = (await context?.settings.get(
+      "postTemplate5title",
+    )) as string;
+    const template5body = (await context?.settings.get(
+      "postTemplate5body",
+    )) as Paragraph;
+
     if (_event.values.templateNumber == "template1") {
       context.ui.showForm(useTemplateOne, {
         tempName1: template1name,
@@ -1344,6 +1760,18 @@ const useTemplate = Devvit.createForm(
         tempName3: template3name,
         tempTitle3: template3title,
         tempBody3: template3body,
+      });
+      } else if (_event.values.templateNumber == "template4") {
+      context.ui.showForm(useTemplateFour, {
+        tempName4: template4name,
+        tempTitle4: template4title,
+        tempBody4: template4body,
+      });
+      } else if (_event.values.templateNumber == "template5") {
+      context.ui.showForm(useTemplateFive, {
+        tempName5: template5name,
+        tempTitle5: template5title,
+        tempBody5: template5body,
       });
     } else {
       context.ui.showToast("You must select a template.");
@@ -1951,6 +2379,417 @@ const useTemplateThree = Devvit.createForm(
   },
 );
 
+const useTemplateFour = Devvit.createForm(
+  (data) => ({
+    fields: [
+      {
+        name: `templateNumberFourTitle`,
+        label: "Post title",
+        type: "string",
+        defaultValue: data.tempTitle4,
+      },
+      {
+        name: `templateNumberFourBody`,
+        label: "Post body",
+        type: "paragraph",
+        defaultValue: data.tempBody4,
+      },
+      {
+        name: `mybDist`,
+        label: `Distinguish?`,
+        type: "boolean",
+        defaultValue: true,
+        helpText:
+          "All content created by the app is distinguished, so users clearly see they come from the mod team.",
+        disabled: true,
+      },
+      {
+        name: `iSticky`,
+        label: `Sticky?`,
+        type: "boolean",
+      },
+      {
+        name: `iLock`,
+        label: `Lock?`,
+        type: "boolean",
+      },
+    ],
+    title: data.tempName4,
+    acceptLabel: "Submit",
+    cancelLabel: "Cancel",
+  }),
+  async (_event, context) => {
+    const { reddit, ui } = context;
+    console.log(_event.values);
+    const subreddit = await context.reddit.getCurrentSubreddit();
+    const appAccount = (await context.reddit.getAppUser()).username;
+
+    const postTitle = _event.values.templateNumberFourTitle;
+    var postBody = _event.values.templateNumberFourBody;
+    const currentUser = await reddit.getCurrentUser();
+
+    const distinguishPost = _event.values.mybDist;
+    const stickyPost = _event.values.iSticky;
+    const lockPost = _event.values.iLock;
+
+    const setRelayAppPostFlair = (await context?.settings.get(
+      "setFlairAfterPosting",
+    )) as boolean;
+    const relayAppFlairText = (await context?.settings.get(
+      "relayAppPostFlairText",
+    )) as string;
+
+    if (!postTitle) {
+      console.log(`Post doesn't have title, returning...`);
+      return ui.showToast("Sorry, no title.");
+    } else {
+      const newPost = await context.reddit.submitPost({
+        subredditName: subreddit.name,
+        title: postTitle,
+        text: postBody,
+      });
+
+      if (distinguishPost == true) {
+        newPost.distinguish();
+        console.log(`Post ${newPost.id} distinguished!`);
+      }
+      if (stickyPost == true) {
+        newPost.sticky();
+        console.log(`Post ${newPost.id} stickied!`);
+      }
+      if (lockPost == true) {
+        newPost.lock();
+        console.log(`Post ${newPost.id} locked!`);
+      }
+
+      if (!setRelayAppPostFlair) {
+        console.log("Auto changing the post flair is disabled, skipping...");
+      } else {
+        console.log("Auto changing the post flair is enabled, okay...");
+        await context.reddit.setPostFlair({
+          subredditName: subreddit.name,
+          postId: newPost.id,
+          text: relayAppFlairText,
+        });
+      }
+      await context.reddit.addModNote({
+        subreddit: subreddit.name,
+        user: appAccount,
+        label: "SOLID_CONTRIBUTOR",
+        redditId: newPost.id,
+        note: `${currentUser?.username} created a mod post (title: ${postTitle}).`,
+      });
+      console.log(
+        `Added mod note for post ${newPost.id} by ${currentUser?.username}.`,
+      );
+      const sendtoModmail = (await context?.settings.get(
+        "sendModmail",
+      )) as boolean;
+      const sendtoDiscord = (await context?.settings.get(
+        "sendDiscord",
+      )) as boolean;
+      var logMsg = `**Title**: ${newPost.title}\n\n`;
+      ((logMsg += `**URL**: https://reddit.com${newPost.permalink}\n\n`),
+        (logMsg += `**Moderator**: ${currentUser?.username}\n\n`));
+      logMsg += `**Post body**: ${newPost.body}\n\n`;
+
+      ui.showToast("Posted!");
+      console.log(
+        `${currentUser?.username} used Relay App to post ${newPost.url}`,
+      );
+      if (sendtoModmail == false) {
+        console.log("Not sending to Modmail, skipping...");
+      } else {
+        await context.reddit.sendPrivateMessageAsSubreddit({
+          fromSubredditName: subreddit.name,
+          to: appAccount,
+          subject: `Mod post submitted`,
+          text: logMsg,
+        });
+        console.log(`Sent to Modmail!`);
+      }
+      const webhook = (await context?.settings.get("webhookEditor")) as string;
+      if (!webhook) {
+        console.error("No webhook URL provided");
+        return;
+      } else {
+        try {
+          let payload;
+          if (sendtoDiscord == false) {
+            console.log("Not sending to Discord, skipping...");
+          } else {
+            const discordRole = await context.settings.get("discordRole");
+            let discordAlertMessage;
+            if (discordRole) {
+              discordAlertMessage = `<@&${discordRole}>\n\n`;
+            } else {
+              discordAlertMessage = ``;
+            }
+
+            if (webhook.startsWith("https://discord.com/api/webhooks/")) {
+              console.log("Got Discord webhook, let's go!");
+
+              // Check if the webhook is a Discord webhook
+              payload = {
+                content: discordAlertMessage,
+                embeds: [
+                  {
+                    title: `${newPost.title}`,
+                    url: `https://reddit.com${newPost.permalink}`,
+                    fields: [
+                      {
+                        name: "Subreddit",
+                        value: `r/${subreddit.name}`,
+                        inline: true,
+                      },
+                      {
+                        name: "Moderator",
+                        value: `${currentUser?.username}`,
+                        inline: true,
+                      },
+                      {
+                        name: "Post body",
+                        value: `${newPost.body}`,
+                        inline: true,
+                      },
+                    ],
+                  },
+                ],
+              };
+            }
+          }
+          try {
+            // Send alert to Discord
+            await fetch(webhook, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            console.log("Alert sent to Discord!");
+          } catch (err) {
+            console.error(`Error sending alert: ${err}`);
+          }
+        } catch (err) {
+          console.error(`Error sending alert: ${err}`);
+        }
+      }
+    }
+  },
+);
+
+const useTemplateFive = Devvit.createForm(
+  (data) => ({
+    fields: [
+      {
+        name: `templateNumberFiveTitle`,
+        label: "Post title",
+        type: "string",
+        defaultValue: data.tempTitle5,
+      },
+      {
+        name: `templateNumberFiveBody`,
+        label: "Post body",
+        type: "paragraph",
+        defaultValue: data.tempBody5,
+      },
+      {
+        name: `mybDist`,
+        label: `Distinguish?`,
+        type: "boolean",
+        defaultValue: true,
+        helpText:
+          "All content created by the app is distinguished, so users clearly see they come from the mod team.",
+        disabled: true,
+      },
+      {
+        name: `iSticky`,
+        label: `Sticky?`,
+        type: "boolean",
+      },
+      {
+        name: `iLock`,
+        label: `Lock?`,
+        type: "boolean",
+      },
+    ],
+    title: data.tempName5,
+    acceptLabel: "Submit",
+    cancelLabel: "Cancel",
+  }),
+  async (_event, context) => {
+    const { reddit, ui } = context;
+    console.log(_event.values);
+    const subreddit = await context.reddit.getCurrentSubreddit();
+    const appAccount = (await context.reddit.getAppUser()).username;
+
+    const postTitle = _event.values.templateNumberFiveTitle;
+    var postBody = _event.values.templateNumberFiveBody;
+    const currentUser = await reddit.getCurrentUser();
+
+    const distinguishPost = _event.values.mybDist;
+    const stickyPost = _event.values.iSticky;
+    const lockPost = _event.values.iLock;
+
+    const setRelayAppPostFlair = (await context?.settings.get(
+      "setFlairAfterPosting",
+    )) as boolean;
+    const relayAppFlairText = (await context?.settings.get(
+      "relayAppPostFlairText",
+    )) as string;
+
+    if (!postTitle) {
+      console.log(`Post doesn't have title, returning...`);
+      return ui.showToast("Sorry, no title.");
+    } else {
+      const newPost = await context.reddit.submitPost({
+        subredditName: subreddit.name,
+        title: postTitle,
+        text: postBody,
+      });
+
+      if (distinguishPost == true) {
+        newPost.distinguish();
+        console.log(`Post ${newPost.id} distinguished!`);
+      }
+      if (stickyPost == true) {
+        newPost.sticky();
+        console.log(`Post ${newPost.id} stickied!`);
+      }
+      if (lockPost == true) {
+        newPost.lock();
+        console.log(`Post ${newPost.id} locked!`);
+      }
+
+      if (!setRelayAppPostFlair) {
+        console.log("Auto changing the post flair is disabled, skipping...");
+      } else {
+        console.log("Auto changing the post flair is enabled, okay...");
+        await context.reddit.setPostFlair({
+          subredditName: subreddit.name,
+          postId: newPost.id,
+          text: relayAppFlairText,
+        });
+      }
+      await context.reddit.addModNote({
+        subreddit: subreddit.name,
+        user: appAccount,
+        label: "SOLID_CONTRIBUTOR",
+        redditId: newPost.id,
+        note: `${currentUser?.username} created a mod post (title: ${postTitle}).`,
+      });
+      console.log(
+        `Added mod note for post ${newPost.id} by ${currentUser?.username}.`,
+      );
+      const sendtoModmail = (await context?.settings.get(
+        "sendModmail",
+      )) as boolean;
+      const sendtoDiscord = (await context?.settings.get(
+        "sendDiscord",
+      )) as boolean;
+      var logMsg = `**Title**: ${newPost.title}\n\n`;
+      ((logMsg += `**URL**: https://reddit.com${newPost.permalink}\n\n`),
+        (logMsg += `**Moderator**: ${currentUser?.username}\n\n`));
+      logMsg += `**Post body**: ${newPost.body}\n\n`;
+
+      ui.showToast("Posted!");
+      console.log(
+        `${currentUser?.username} used Relay App to post ${newPost.url}`,
+      );
+      if (sendtoModmail == false) {
+        console.log("Not sending to Modmail, skipping...");
+      } else {
+        await context.reddit.sendPrivateMessageAsSubreddit({
+          fromSubredditName: subreddit.name,
+          to: appAccount,
+          subject: `Mod post submitted`,
+          text: logMsg,
+        });
+        console.log(`Sent to Modmail!`);
+      }
+      const webhook = (await context?.settings.get("webhookEditor")) as string;
+      if (!webhook) {
+        console.error("No webhook URL provided");
+        return;
+      } else {
+        try {
+          let payload;
+          if (sendtoDiscord == false) {
+            console.log("Not sending to Discord, skipping...");
+          } else {
+            const discordRole = await context.settings.get("discordRole");
+            let discordAlertMessage;
+            if (discordRole) {
+              discordAlertMessage = `<@&${discordRole}>\n\n`;
+            } else {
+              discordAlertMessage = ``;
+            }
+
+            if (webhook.startsWith("https://discord.com/api/webhooks/")) {
+              console.log("Got Discord webhook, let's go!");
+
+              // Check if the webhook is a Discord webhook
+              payload = {
+                content: discordAlertMessage,
+                embeds: [
+                  {
+                    title: `${newPost.title}`,
+                    url: `https://reddit.com${newPost.permalink}`,
+                    fields: [
+                      {
+                        name: "Subreddit",
+                        value: `r/${subreddit.name}`,
+                        inline: true,
+                      },
+                      {
+                        name: "Moderator",
+                        value: `${currentUser?.username}`,
+                        inline: true,
+                      },
+                      {
+                        name: "Post body",
+                        value: `${newPost.body}`,
+                        inline: true,
+                      },
+                    ],
+                  },
+                ],
+              };
+            }
+          }
+          try {
+            // Send alert to Discord
+            await fetch(webhook, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            console.log("Alert sent to Discord!");
+          } catch (err) {
+            console.error(`Error sending alert: ${err}`);
+          }
+        } catch (err) {
+          console.error(`Error sending alert: ${err}`);
+        }
+      }
+    }
+  },
+);
+
+Devvit.addMenuItem({
+  location: "subreddit",
+  label: "[Relay App] - Apply Scheduled Posts",
+  description: "Apply scheduled posts based on saved templates.",
+  forUserType: "moderator",
+  onPress: async (event, context) => {
+    await applySchedules(context);
+    context.ui.showToast('Scheduled posts updated successfully!');
+  },
+});
+
 Devvit.addMenuItem({
   location: "post",
   label: "[Relay App] - Clone post",
@@ -2120,5 +2959,39 @@ Devvit.addMenuItem({
     }
   },
 });
+
+async function applySchedules(context: Devvit.Context) {
+  const scheduler = context.scheduler;
+
+  // 1. Clear existing jobs
+  const currentJobs = await scheduler.listJobs();
+  await Promise.all(
+    currentJobs
+      .filter((job) => job.name === 'scheduled_post_job')
+      .map((job) => scheduler.cancelJob(job.id))
+  );
+
+  // 2. Recreate schedules from SAVED settings
+  for (const i of [1, 2, 3, 4, 5]) {
+    const enabled = await context.settings.get(`postTemplate${i}Enabled`) as boolean;
+    if (!enabled) continue;
+
+    const day = await context.settings.get(`postTemplate${i}Day`) as string;
+    const hour = await context.settings.get(`postTemplate${i}Hour`) as number;
+    const minute = await context.settings.get(`postTemplate${i}Minute`) as number;
+    const repeat = await context.settings.get(`postTemplate${i}Repeat`) as boolean;
+
+    const cron = repeat
+      ? `${minute} ${hour} * * ${day}`   // weekly
+      : `${minute} ${hour} * * *`;      // one-time (handled in job)
+
+    await scheduler.runJob({
+      name: 'scheduled_post_job',
+      cron,
+      data: { templateNumber: i },
+    });
+  }
+}
+
 
 export default Devvit;
