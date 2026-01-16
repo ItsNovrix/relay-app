@@ -20,11 +20,18 @@ Do you moderate a subreddit where the team regularly needs to publish official a
 - **Auto-Flair (optional)** — Apply a chosen post flair after submitting a post, or automatically change post flair after replying to a post.
 - **Permanent Delete** — Posts/comments created via Relay App can be permantently deleted (not just marked as "removed").
 
-> **Coming Soon:** **Reply notifications** — Get notified via modmail when a user replies to a Relay App post or comment
+> **Coming Soon:** **Monthly Post Scheduling Intervals** — Enhanced post scheduling functionality to include monthly scheduling option.
 
 ---
 
 ## What's New?
+
+### Reply notifications
+
+Relay App now includes functionality to notify via modmail when a user replies to a Relay App post or comment.
+
+- Optional toggle to ignore replies from mod accounts.
+- Optional functionality to notify for additional specified users (e.g., AutoModerator and -ModTeam accounts).
 
 ### Post scheduling
 
@@ -193,5 +200,6 @@ If you have any feedback/suggestions or need support, visit [r/RelayLabs](https:
 * v0.0.8: Implemented scheduling system, updated ReadMe.
 * v0.0.9: Updated ReadMe
 * v0.0.10: Updated ReadMe and resources links.
+* v0.0.11: Implemented reply notifications for Relay App posts/comments, reconfigured app settings cleaned up dead code, reorganized code.
 
 Thanks for using **Relay App** — publish faster, safer, and without shared accounts!
